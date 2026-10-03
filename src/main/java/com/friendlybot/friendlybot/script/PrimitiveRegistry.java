@@ -527,6 +527,8 @@ public final class PrimitiveRegistry {
                 };
         return new net.minecraft.world.inventory.TransientCraftingContainer(dummy, 3, 3);
     }
+
+    private static String describeRecipes(BotContext ctx, String itemId) {
         List<String> out = new ArrayList<>();
         for (Recipe<?> recipe : ctx.level.getRecipeManager().getRecipes()) {
             ItemStack result;
