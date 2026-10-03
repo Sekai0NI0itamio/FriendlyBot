@@ -686,7 +686,10 @@ public final class PrimitiveRegistry {
         ItemStack fuel = furnace.getItem(1);
         ItemStack output = furnace.getItem(2);
         if (action.equals("status")) {
-            return (furnace.isLit() ? "lit " : "unlit ")
+            net.minecraft.world.level.block.state.BlockState state = ctx.level.getBlockState(relative(ctx, args));
+            boolean lit = state.hasProperty(net.minecraft.world.level.block.AbstractFurnaceBlock.LIT)
+                    && state.getValue(net.minecraft.world.level.block.AbstractFurnaceBlock.LIT);
+            return (lit ? "lit " : "unlit ")
                     + "in:" + (input.isEmpty() ? "-" : idOf(input.getItem()) + "x" + input.getCount())
                     + " fuel:" + (fuel.isEmpty() ? "-" : idOf(fuel.getItem()) + "x" + fuel.getCount())
                     + " out:" + (output.isEmpty() ? "-" : idOf(output.getItem()) + "x" + output.getCount());
