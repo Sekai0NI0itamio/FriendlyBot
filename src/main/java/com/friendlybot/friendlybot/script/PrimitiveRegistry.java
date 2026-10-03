@@ -176,6 +176,7 @@ public final class PrimitiveRegistry {
         put("stop", (ctx, args) -> {
             ctx.hasTarget = false;
             ctx.followOwner = false;
+            ctx.bot.setPlayerInput(0.0F, 0.0F, false, false);
             return "stopped";
         });
 
@@ -203,6 +204,23 @@ public final class PrimitiveRegistry {
             net.minecraft.world.InteractionResult result = ctx.bot.gameMode.useItemOn(
                     ctx.bot, ctx.level, stack, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
             return result.consumesAction() ? "placed" : "place failed";
+        });
+
+        put("interact", (ctx, args) -> {
+            BlockPos pos = relative(ctx, args);
+            net.minecraft.core.Direction face =
+                    net.minecraft.core.Direction.byName(args.getOrDefault("face", "up"));
+            if (face == null) {
+                face = net.minecraft.core.Direction.UP;
+            }
+            ItemStack stack = ctx.bot.getInventory().getSelected();
+            ctx.bot.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+            net.minecraft.world.phys.BlockHitResult hit = new net.minecraft.world.phys.BlockHitResult(
+                    new net.minecraft.world.phys.Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5),
+                    face, pos, false);
+            net.minecraft.world.InteractionResult result = ctx.bot.gameMode.useItemOn(
+                    ctx.bot, ctx.level, stack, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
+            return result.consumesAction() ? "used" : "nothing happened";
         });
 
         put("select", (ctx, args) -> {
@@ -355,8 +373,7 @@ public final class PrimitiveRegistry {
             return "ate " + idOf(stack.getItem());
         });
 
-        put("say", (ctx, args) -> {
-            String text = args.getOrDefault("text", "");
+        put("say", (ctx, args) -> {            String text = args.getOrDefault("text", "");
             ctx.server.getPlayerList().broadcastSystemMessage(
                     Component.literal("<" + ctx.bot.getGameProfile().getName() + "> " + text), false);
             return "said";

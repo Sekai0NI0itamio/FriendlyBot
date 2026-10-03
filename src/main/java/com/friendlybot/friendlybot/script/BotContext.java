@@ -19,6 +19,9 @@ public final class BotContext {
     public volatile double targetZ;
     public volatile boolean hasTarget;
     public volatile boolean followOwner;
+    public volatile double lastX;
+    public volatile double lastZ;
+    public volatile int stillTicks;
 
     public BotContext(ServerPlayer bot, ServerPlayer owner) {
         this.bot = bot;

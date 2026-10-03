@@ -110,12 +110,25 @@ public final class BotEvents {
     @SubscribeEvent
     public static void onServerStarting(ServerStartingEvent event) {
         server = event.getServer();
-        configFile = server.getWorldPath(LevelResource.ROOT).resolve("serverconfig").resolve("friendlybot.json");
+        Path dir = server.getWorldPath(LevelResource.ROOT).resolve("serverconfig");
+        configFile = dir.resolve("friendlybot.json");
         config = new BotConfig(configFile);
         try {
             config.load();
         } catch (IOException e) {
             FriendlyBot.LOGGER.error("Failed to load FriendlyBot config", e);
+        }
+        Path tokenFile = dir.resolve("friendlybot-token.txt");
+        if (java.nio.file.Files.isRegularFile(tokenFile)) {
+            try {
+                String fileToken = java.nio.file.Files.readString(tokenFile).trim();
+                if (!fileToken.isEmpty()) {
+                    config.token(fileToken);
+                    FriendlyBot.LOGGER.info("FriendlyBot using token from friendlybot-token.txt");
+                }
+            } catch (IOException e) {
+                FriendlyBot.LOGGER.error("Failed to read friendlybot-token.txt", e);
+            }
         }
         remote = new AgentRunner.RemoteTools("", ToolLoader.defaults(),
                 config.model(), 0.3, 800, 10);
@@ -223,33 +236,56 @@ public final class BotEvents {
             return;
         }
         if (ctx.hasTarget) {
-            double dx = ctx.targetX - player.getX();
-            double dy = ctx.targetY - player.getY();
-            double dz = ctx.targetZ - player.getZ();
-            double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            if (dist < 0.6) {
-                ctx.hasTarget = false;
-            } else {
-                double step = Math.min(0.35, dist);
-                player.teleportTo(player.serverLevel(),
-                        player.getX() + dx / dist * step,
-                        player.getY() + dy / dist * step,
-                        player.getZ() + dz / dist * step,
-                        player.getYRot(), player.getXRot());
-            }
+            walkToward(ctx, player, ctx.targetX, ctx.targetY, ctx.targetZ, true);
             return;
         }
         if (ctx.followOwner && ctx.owner != null && ctx.owner.isAlive()) {
             double dx = ctx.owner.getX() - player.getX();
-            double dy = ctx.owner.getY() - player.getY();
             double dz = ctx.owner.getZ() - player.getZ();
-            double dist = Math.sqrt(dx * dx + dz * dz);
-            if (dist > 3.0 && dist < 64.0) {
-                double step = Math.min(0.35, dist);
-                player.teleportTo(player.serverLevel(),
-                        player.getX() + dx / dist * step, player.getY(), player.getZ() + dz / dist * step,
-                        player.getYRot(), player.getXRot());
+            if (Math.sqrt(dx * dx + dz * dz) > 3.0) {
+                walkToward(ctx, player, ctx.owner.getX(), player.getY(), ctx.owner.getZ(), false);
+            } else {
+                player.setPlayerInput(0.0F, 0.0F, false, false);
             }
+        }
+    }
+
+    /**
+     * Walks like a player: face the target and feed movement input so vanilla
+     * physics (gravity, steps, limb swing) does the work. Teleports only when
+     * genuinely stuck or asked across dimensions.
+     */
+    private static void walkToward(BotContext ctx, ServerPlayer player,
+            double x, double y, double z, boolean exact) {
+        double dx = x - player.getX();
+        double dz = z - player.getZ();
+        double horizontal = Math.sqrt(dx * dx + dz * dz);
+        if (exact && horizontal < 0.6 && Math.abs(y - player.getY()) < 1.5) {
+            ctx.hasTarget = false;
+            player.setPlayerInput(0.0F, 0.0F, false, false);
+            return;
+        }
+        if (horizontal > 0.05) {
+            float yaw = (float) (Math.atan2(-dx, dz) * 180.0 / Math.PI);
+            player.setYRot(yaw);
+            player.setYHeadRot(yaw);
+        }
+        player.setPlayerInput(0.0F, 1.0F, player.horizontalCollision, false);
+        double moved = Math.sqrt(Math.pow(player.getX() - ctx.lastX, 2) + Math.pow(player.getZ() - ctx.lastZ, 2));
+        if (moved < 0.05) {
+            ctx.stillTicks++;
+        } else {
+            ctx.stillTicks = 0;
+        }
+        ctx.lastX = player.getX();
+        ctx.lastZ = player.getZ();
+        if (ctx.stillTicks > 40) {
+            ctx.stillTicks = 0;
+            if (exact) {
+                player.teleportTo(player.serverLevel(), x, y, z, player.getYRot(), player.getXRot());
+                ctx.hasTarget = false;
+            }
+            player.setPlayerInput(0.0F, 0.0F, false, false);
         }
     }
 

@@ -8,114 +8,330 @@
       "name": "status",
       "description": "Full bot state: position, health, movement, inventory.",
       "params": [],
-      "steps": [{ "primitive": "status", "args": {} }]
+      "steps": [
+        {
+          "primitive": "status",
+          "args": {}
+        }
+      ]
     },
     {
       "name": "say",
       "description": "Say something in chat as the bot. The ONLY way players hear you.",
-      "params": ["text"],
-      "steps": [{ "primitive": "say", "args": { "text": "${input.text}" } }]
+      "params": [
+        "text"
+      ],
+      "steps": [
+        {
+          "primitive": "say",
+          "args": {
+            "text": "${input.text}"
+          }
+        }
+      ]
     },
     {
       "name": "move_to",
       "description": "Walk toward coordinates relative to the bot (dx,dy,dz in blocks). Use status to check arrival.",
-      "params": ["dx", "dy", "dz"],
-      "steps": [{ "primitive": "set_target", "args": { "dx": "${input.dx}", "dy": "${input.dy}", "dz": "${input.dz}" } }]
+      "params": [
+        "dx",
+        "dy",
+        "dz"
+      ],
+      "steps": [
+        {
+          "primitive": "set_target",
+          "args": {
+            "dx": "${input.dx}",
+            "dy": "${input.dy}",
+            "dz": "${input.dz}"
+          }
+        }
+      ]
     },
     {
       "name": "follow",
       "description": "Follow the owner (on true/false).",
-      "params": ["on"],
-      "steps": [{ "primitive": "follow", "args": { "on": "${input.on}" } }]
+      "params": [
+        "on"
+      ],
+      "steps": [
+        {
+          "primitive": "follow",
+          "args": {
+            "on": "${input.on}"
+          }
+        }
+      ]
     },
     {
       "name": "stop",
       "description": "Stop moving and stay.",
       "params": [],
-      "steps": [{ "primitive": "stop", "args": {} }]
+      "steps": [
+        {
+          "primitive": "stop",
+          "args": {}
+        }
+      ]
     },
     {
       "name": "dig",
       "description": "Break the block at relative coords.",
-      "params": ["dx", "dy", "dz"],
-      "steps": [{ "primitive": "break_block", "args": { "dx": "${input.dx}", "dy": "${input.dy}", "dz": "${input.dz}" } }]
+      "params": [
+        "dx",
+        "dy",
+        "dz"
+      ],
+      "steps": [
+        {
+          "primitive": "break_block",
+          "args": {
+            "dx": "${input.dx}",
+            "dy": "${input.dy}",
+            "dz": "${input.dz}"
+          }
+        }
+      ]
     },
     {
       "name": "place",
       "description": "Place the item in inventory slot against the block at relative coords.",
-      "params": ["slot", "dx", "dy", "dz"],
-      "steps": [{ "primitive": "place", "args": { "slot": "${input.slot}", "dx": "${input.dx}", "dy": "${input.dy}", "dz": "${input.dz}" } }]
+      "params": [
+        "slot",
+        "dx",
+        "dy",
+        "dz"
+      ],
+      "steps": [
+        {
+          "primitive": "place",
+          "args": {
+            "slot": "${input.slot}",
+            "dx": "${input.dx}",
+            "dy": "${input.dy}",
+            "dz": "${input.dz}"
+          }
+        }
+      ]
     },
     {
       "name": "hold",
       "description": "Hold inventory slot (0-35) in the main hand.",
-      "params": ["slot"],
-      "steps": [{ "primitive": "select", "args": { "slot": "${input.slot}" } }]
+      "params": [
+        "slot"
+      ],
+      "steps": [
+        {
+          "primitive": "select",
+          "args": {
+            "slot": "${input.slot}"
+          }
+        }
+      ]
     },
     {
       "name": "tidy",
       "description": "Merge and compact the whole inventory.",
       "params": [],
-      "steps": [{ "primitive": "merge_all", "args": {} }]
+      "steps": [
+        {
+          "primitive": "merge_all",
+          "args": {}
+        }
+      ]
     },
     {
       "name": "give",
       "description": "Drop count items from slot at the bot's feet for the owner.",
-      "params": ["slot", "count"],
-      "steps": [{ "primitive": "drop", "args": { "slot": "${input.slot}", "count": "${input.count}" } }]
+      "params": [
+        "slot",
+        "count"
+      ],
+      "steps": [
+        {
+          "primitive": "drop",
+          "args": {
+            "slot": "${input.slot}",
+            "count": "${input.count}"
+          }
+        }
+      ]
     },
     {
       "name": "recipe",
       "description": "Look up how to craft an item id, e.g. minecraft:torch.",
-      "params": ["item"],
-      "steps": [{ "primitive": "recipes_for", "args": { "item": "${input.item}" } }]
+      "params": [
+        "item"
+      ],
+      "steps": [
+        {
+          "primitive": "recipes_for",
+          "args": {
+            "item": "${input.item}"
+          }
+        }
+      ]
     },
     {
       "name": "craft",
       "description": "Craft one batch of an item id from inventory. Returns NEED:list when ingredients are missing.",
-      "params": ["item"],
-      "steps": [{ "primitive": "craft_once", "args": { "item": "${input.item}" } }]
+      "params": [
+        "item"
+      ],
+      "steps": [
+        {
+          "primitive": "craft_once",
+          "args": {
+            "item": "${input.item}"
+          }
+        }
+      ]
     },
     {
       "name": "chest",
       "description": "List a container's contents at relative coords.",
-      "params": ["dx", "dy", "dz"],
-      "steps": [{ "primitive": "container_list", "args": { "dx": "${input.dx}", "dy": "${input.dy}", "dz": "${input.dz}" } }]
+      "params": [
+        "dx",
+        "dy",
+        "dz"
+      ],
+      "steps": [
+        {
+          "primitive": "container_list",
+          "args": {
+            "dx": "${input.dx}",
+            "dy": "${input.dy}",
+            "dz": "${input.dz}"
+          }
+        }
+      ]
     },
     {
       "name": "take",
       "description": "Take item (optional count) from the container at relative coords.",
-      "params": ["dx", "dy", "dz", "item", "count"],
-      "steps": [{ "primitive": "container_take", "args": { "dx": "${input.dx}", "dy": "${input.dy}", "dz": "${input.dz}", "item": "${input.item}", "count": "${input.count}" } }]
+      "params": [
+        "dx",
+        "dy",
+        "dz",
+        "item",
+        "count"
+      ],
+      "steps": [
+        {
+          "primitive": "container_take",
+          "args": {
+            "dx": "${input.dx}",
+            "dy": "${input.dy}",
+            "dz": "${input.dz}",
+            "item": "${input.item}",
+            "count": "${input.count}"
+          }
+        }
+      ]
     },
     {
       "name": "store",
       "description": "Put the held/slot stack into the container at relative coords.",
-      "params": ["dx", "dy", "dz", "slot"],
-      "steps": [{ "primitive": "container_put", "args": { "dx": "${input.dx}", "dy": "${input.dy}", "dz": "${input.dz}", "slot": "${input.slot}" } }]
+      "params": [
+        "dx",
+        "dy",
+        "dz",
+        "slot"
+      ],
+      "steps": [
+        {
+          "primitive": "container_put",
+          "args": {
+            "dx": "${input.dx}",
+            "dy": "${input.dy}",
+            "dz": "${input.dz}",
+            "slot": "${input.slot}"
+          }
+        }
+      ]
     },
     {
       "name": "furnace",
       "description": "status, load (auto fuel+input), or take from the furnace at relative coords.",
-      "params": ["dx", "dy", "dz", "action"],
-      "steps": [{ "primitive": "furnace", "args": { "dx": "${input.dx}", "dy": "${input.dy}", "dz": "${input.dz}", "action": "${input.action}" } }]
+      "params": [
+        "dx",
+        "dy",
+        "dz",
+        "action"
+      ],
+      "steps": [
+        {
+          "primitive": "furnace",
+          "args": {
+            "dx": "${input.dx}",
+            "dy": "${input.dy}",
+            "dz": "${input.dz}",
+            "action": "${input.action}"
+          }
+        }
+      ]
     },
     {
       "name": "eat",
       "description": "Eat the best food in inventory.",
       "params": [],
-      "steps": [{ "primitive": "eat", "args": {} }]
+      "steps": [
+        {
+          "primitive": "eat",
+          "args": {}
+        }
+      ]
     },
     {
       "name": "look",
       "description": "What is around: nearby blocks, entities, containers.",
       "params": [],
       "steps": [
-        { "primitive": "nearby_blocks", "args": { "r": "2" }, "save_as": "blocks" },
-        { "primitive": "nearby_entities", "args": { "r": "12" }, "save_as": "entities" },
-        { "primitive": "nearby_containers", "args": { "r": "8" }, "save_as": "chests" }
+        {
+          "primitive": "nearby_blocks",
+          "args": {
+            "r": "2"
+          },
+          "save_as": "blocks"
+        },
+        {
+          "primitive": "nearby_entities",
+          "args": {
+            "r": "12"
+          },
+          "save_as": "entities"
+        },
+        {
+          "primitive": "nearby_containers",
+          "args": {
+            "r": "8"
+          },
+          "save_as": "chests"
+        }
       ],
       "return": "blocks: ${blocks} | entities: ${entities} | containers: ${chests}"
+    },
+    {
+      "name": "interact",
+      "description": "Right-click the block at relative coords with the held item (levers, buttons, doors, chests). Optional face.",
+      "params": [
+        "dx",
+        "dy",
+        "dz",
+        "face"
+      ],
+      "steps": [
+        {
+          "primitive": "interact",
+          "args": {
+            "dx": "${input.dx}",
+            "dy": "${input.dy}",
+            "dz": "${input.dz}",
+            "face": "${input.face}"
+          }
+        }
+      ]
     }
   ]
 }
