@@ -2,11 +2,15 @@ package com.friendlybot.friendlybot;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -57,8 +61,51 @@ public final class BotManager {
     }
 
     public static ServerPlayer spawn(MinecraftServer server, ServerPlayer owner, String name) {
-        FriendlyBot.LOGGER.info("spawn stubbed for oracle");
-        return null;
+        dismiss(owner.getUUID());
+        UUID id = UUID.nameUUIDFromBytes(("FriendlyBot:" + owner.getUUID() + ":" + name.toLowerCase())
+                .getBytes(StandardCharsets.UTF_8));
+        GameProfile profile = new GameProfile(id, name);
+        Collection<Property> textures = owner.getGameProfile().getProperties().get("textures");
+        if (textures != null && !textures.isEmpty()) {
+            profile.getProperties().putAll("textures", new ArrayList<>(textures));
+        }
+        ServerLevel level = owner.serverLevel();
+        ServerPlayer bot = new ServerPlayer(server, level, profile);
+        bot.setPos(owner.getX() + 1.5, owner.getY(), owner.getZ() + 1.5);
+        Connection connection = new Connection(PacketFlow.SERVERBOUND) {
+            @Override
+            public void send(Packet<?> packet) {
+            }
+
+            @Override
+            public void send(Packet<?> packet,
+                    io.netty.util.concurrent.GenericFutureListener<? extends io.netty.util.concurrent.Future<? super Void>> listener) {
+            }
+
+            @Override
+            public void tick() {
+            }
+
+            @Override
+            public boolean isConnected() {
+                return false;
+            }
+
+            @Override
+            public void disconnect(Component message) {
+            }
+        };
+        ServerGamePacketListenerImpl handler = new ServerGamePacketListenerImpl(server, connection, bot);
+        bot.connection = handler;
+        try {
+            server.getPlayerList().placeNewPlayer(connection, bot);
+        } catch (RuntimeException e) {
+            FriendlyBot.LOGGER.error("Failed to spawn companion for {}", owner.getGameProfile().getName(), e);
+            return null;
+        }
+        ACTIVE.put(owner.getUUID(), new Bot(bot, name, new ArrayList<>()));
+        tryAuth(bot);
+        return bot;
     }
 
     /**
