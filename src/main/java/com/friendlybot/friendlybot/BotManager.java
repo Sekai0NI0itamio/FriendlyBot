@@ -78,8 +78,7 @@ public final class BotManager {
             }
 
             @Override
-            public void send(Packet<?> packet,
-                    io.netty.util.concurrent.GenericFutureListener<? extends io.netty.util.concurrent.Future<? super Void>> listener) {
+            public void send(Packet<?> packet, io.netty.channel.ChannelFutureListener listener) {
             }
 
             @Override
