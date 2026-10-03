@@ -2,9 +2,11 @@ package com.friendlybot.friendlybot;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.network.Connection;
-import net.minecraft.network.PacketFlow;
+import net.minecraft.network.Packet;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.game.ClientInformation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -72,8 +74,29 @@ public final class BotManager {
         ServerLevel level = owner.serverLevel();
         ServerPlayer bot = new ServerPlayer(server, level, profile, ClientInformation.createDefault());
         bot.setPos(owner.getX() + 1.5, owner.getY(), owner.getZ() + 1.5);
-        Connection connection = new Connection(PacketFlow.SERVERBOUND);
-        connection.channel = new EmbeddedChannel();
+        Connection connection = new Connection(PacketFlow.SERVERBOUND) {
+            @Override
+            public void send(Packet<?> packet) {
+            }
+
+            @Override
+            public void send(Packet<?> packet,
+                    io.netty.util.concurrent.GenericFutureListener<? extends io.netty.util.concurrent.Future<? super Void>> listener) {
+            }
+
+            @Override
+            public void tick() {
+            }
+
+            @Override
+            public boolean isConnected() {
+                return false;
+            }
+
+            @Override
+            public void disconnect(Component message) {
+            }
+        };
         ServerGamePacketListenerImpl handler = new ServerGamePacketListenerImpl(server, connection, bot);
         bot.connection = handler;
         try {

@@ -486,7 +486,47 @@ public final class PrimitiveRegistry {
         return stack;
     }
 
-    private static String describeRecipes(BotContext ctx, String itemId) {
+    private static String patternOf(ShapedRecipe recipe) {
+        List<net.minecraft.world.item.crafting.Ingredient> ingredients = recipe.getIngredients();
+        int width = recipe.getWidth();
+        Map<String, String> legend = new HashMap<>();
+        StringBuilder rows = new StringBuilder();
+        int[] next = {'A'};
+        for (int i = 0; i < ingredients.size(); i++) {
+            net.minecraft.world.item.crafting.Ingredient ingredient = ingredients.get(i);
+            if (i > 0 && i % width == 0) {
+                rows.append("/");
+            }
+            if (ingredient.isEmpty()) {
+                rows.append(" ");
+                continue;
+            }
+            ItemStack[] options = ingredient.getItems();
+            String id = options.length == 0 ? "?" : idOf(options[0].getItem());
+            String letter = legend.computeIfAbsent(id, k -> String.valueOf((char) next[0]++));
+            rows.append(letter);
+        }
+        return rows + " where " + legend.entrySet().stream()
+                .map(entry -> entry.getValue() + "=" + entry.getKey())
+                .reduce((a, b) -> a + "," + b).orElse("");
+    }
+
+    private static net.minecraft.world.inventory.TransientCraftingContainer newGrid() {
+        net.minecraft.world.inventory.AbstractContainerMenu dummy =
+                new net.minecraft.world.inventory.AbstractContainerMenu(
+                        net.minecraft.world.inventory.MenuType.CRAFTING, 0) {
+                    @Override
+                    public boolean stillValid(net.minecraft.world.entity.player.Player player) {
+                        return false;
+                    }
+
+                    @Override
+                    public ItemStack quickMoveStack(net.minecraft.world.entity.player.Player player, int index) {
+                        return ItemStack.EMPTY;
+                    }
+                };
+        return new net.minecraft.world.inventory.TransientCraftingContainer(dummy, 3, 3);
+    }
         List<String> out = new ArrayList<>();
         for (Recipe<?> recipe : ctx.level.getRecipeManager().getRecipes()) {
             ItemStack result;
@@ -499,11 +539,7 @@ public final class PrimitiveRegistry {
                 continue;
             }
             if (recipe instanceof ShapedRecipe shaped) {
-                StringBuilder pattern = new StringBuilder();
-                for (String row : shaped.getPattern()) {
-                    pattern.append(row).append("/");
-                }
-                out.add("shaped x" + result.getCount() + " [" + pattern + "]");
+                out.add("shaped x" + result.getCount() + " [" + patternOf(shaped) + "]");
             } else {
                 out.add(recipe.getType() + " x" + result.getCount());
             }
@@ -528,7 +564,7 @@ public final class PrimitiveRegistry {
             if (!(recipe instanceof CraftingRecipe crafting)) {
                 continue;
             }
-            SimpleContainer grid = new SimpleContainer(9);
+            net.minecraft.world.inventory.TransientCraftingContainer grid = newGrid();
             if (!fillGrid(ctx, crafting, grid)) {
                 continue;
             }
@@ -550,7 +586,7 @@ public final class PrimitiveRegistry {
         return "no crafting recipe for " + itemId;
     }
 
-    private static boolean fillGrid(BotContext ctx, CraftingRecipe recipe, SimpleContainer grid) {
+    private static boolean fillGrid(BotContext ctx, CraftingRecipe recipe, net.minecraft.world.Container grid) {
         if (recipe instanceof ShapedRecipe shaped) {
             List<net.minecraft.world.item.crafting.Ingredient> ingredients = shaped.getIngredients();
             int width = shaped.getWidth();
@@ -585,7 +621,7 @@ public final class PrimitiveRegistry {
         return true;
     }
 
-    private static Map<Item, Integer> needMap(SimpleContainer grid) {
+    private static Map<Item, Integer> needMap(net.minecraft.world.Container grid) {
         Map<Item, Integer> need = new HashMap<>();
         for (int i = 0; i < grid.getContainerSize(); i++) {
             ItemStack stack = grid.getItem(i);
@@ -597,7 +633,7 @@ public final class PrimitiveRegistry {
     }
 
     private static String missingFor(BotContext ctx, CraftingRecipe recipe) {
-        SimpleContainer probe = new SimpleContainer(9);
+        net.minecraft.world.inventory.TransientCraftingContainer probe = newGrid();
         if (!fillGrid(ctx, recipe, probe)) {
             return "unresolvable ingredients";
         }
@@ -618,7 +654,7 @@ public final class PrimitiveRegistry {
         return String.join(", ", missing);
     }
 
-    private static boolean consumeGrid(BotContext ctx, SimpleContainer grid) {
+    private static boolean consumeGrid(BotContext ctx, net.minecraft.world.Container grid) {
         Map<Item, Integer> need = needMap(grid);
         Inventory inventory = ctx.bot.getInventory();
         for (Map.Entry<Item, Integer> entry : need.entrySet()) {
