@@ -78,10 +78,6 @@ public final class BotManager {
             }
 
             @Override
-            public void send(Packet<?> packet, io.netty.channel.ChannelFutureListener listener) {
-            }
-
-            @Override
             public void tick() {
             }
 
