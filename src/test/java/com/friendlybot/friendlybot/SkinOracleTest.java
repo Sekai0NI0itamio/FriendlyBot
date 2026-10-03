@@ -17,7 +17,7 @@ public class SkinOracleTest {
 
     static void dump(String name) {
         try {
-            Class<?> found = Class.forName(name);
+            Class<?> found = Class.forName(name, false, SkinOracleTest.class.getClassLoader());
             System.out.println("ORACLECTOR-CLASS " + name);
             for (java.lang.reflect.Constructor<?> ctor : found.getDeclaredConstructors()) {
                 System.out.println("ORACLECTOR-CTOR " + Arrays.toString(ctor.getParameterTypes()));
