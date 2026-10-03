@@ -12,3 +12,10 @@
 - [x] Unknown primitive or bad step fails that tool with a clear error, never the server thread
 - [ ] `/friendlybot reload` refetches tools.json + prompt.md from this repo (behavior hot-swaps; Java stays in jar)
 - [ ] Server-only safe: no custom packets, no client registries; bot self-registers through SimpleAuth if present
+
+## v1.0.1 additions
+
+- [x] get-token.py reuses hermes CLI auth or validates a pasted key, writes 0600 file, never prints secrets
+- [ ] Bot walks via movement input with limb swing; teleports only when stuck
+- [ ] interact tool right-clicks blocks with held item
+- [ ] Token file fallback reads world/serverconfig/friendlybot-token.txt
